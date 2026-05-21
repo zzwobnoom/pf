@@ -23,6 +23,9 @@ body{
   font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
   min-height:100vh;font-size:14px;overflow-x:hidden;
 }
+body.auth-locked .page{opacity:0;pointer-events:none;user-select:none}
+body.auth-locked #bg-canvas{filter:blur(6px) brightness(.55)}
+body.auth-locked{overflow:hidden}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:#07091a}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
@@ -296,7 +299,7 @@ select.field-select:focus{border-color:rgba(240,180,41,0.5);box-shadow:0 0 0 3px
 
 </style>
 </head>
-<body>
+<body class="auth-locked">
 
 <!-- 배경 캔버스 -->
 <canvas id="bg-canvas"></canvas>
@@ -307,9 +310,9 @@ select.field-select:focus{border-color:rgba(240,180,41,0.5);box-shadow:0 0 0 3px
   <div class="banner">
     <span>ℹ️</span>
     <div>
-      <b>현재가 업데이트는 로컬 서버에서 실행해야 동작합니다.</b><br>
-      HTML 파일 폴더에서 <code>python3 -m http.server 8080</code> 실행 후
-      <code>http://localhost:8080/portfolio.html</code> 접속
+      <b>포트폴리오 데이터는 암호화되어 저장됩니다.</b><br>
+      GitHub Pages에서는 비밀번호 입력 후 브라우저에서 복호화되며,
+      수정 내용은 이 브라우저의 암호화 저장소에 저장됩니다.
     </div>
   </div>
 
@@ -379,8 +382,8 @@ select.field-select:focus{border-color:rgba(240,180,41,0.5);box-shadow:0 0 0 3px
       <tbody id="fixed-tbody"></tbody>
     </table>
     <div class="note">
-      ISA 최적화: 미국 지수형 및 배당형으로 교체 &nbsp;·&nbsp;
-      세금 분산: 경찰공제회 만기 자금을 연도별(26·27·28년)로 분산 해지하여 연간 금융소득 2,000만원 이하 유지
+      포트폴리오 데이터는 브라우저에서 암호를 입력한 뒤에만 복호화됩니다. &nbsp;·&nbsp;
+      GitHub Pages에서는 서버 인증이 없으므로 강한 암호 사용을 권장합니다.
     </div>
   </div>
 
@@ -403,8 +406,8 @@ select.field-select:focus{border-color:rgba(240,180,41,0.5);box-shadow:0 0 0 3px
 <div class="modal-overlay" id="auth-overlay" onclick="handleAuthOverlayClick(event)">
   <div class="modal auth-modal">
     <div class="auth-icon">🔒</div>
-    <div class="modal-title">암호 확인</div>
-    <div class="modal-sub">값을 수정하려면 암호를 입력하세요.</div>
+    <div class="modal-title" id="auth-title">암호 확인</div>
+    <div class="modal-sub" id="auth-sub">값을 수정하려면 암호를 입력하세요.</div>
     <div class="field" style="margin-bottom:0">
       <label>암호</label>
       <input id="auth-input" type="password" autocomplete="current-password" inputmode="numeric">
@@ -516,27 +519,9 @@ document.querySelectorAll(".card").forEach(c=>observer.observe(c));
 /* ═══════════════════════════════════════
    데이터
 ═══════════════════════════════════════ */
-let FIXED=[
-  {cat:"확정금리",name:"경찰공제회 (4.3%, 28년 3월 만기)",val:100000000,note:""},
-  {cat:"확정금리",name:"경찰공제회 (4.3%, 28년 3월 만기)",val:70000000,note:"27년 12월 해지 예정"},
-  {cat:"확정금리",name:"경찰공제회 (4.3%, 26년 7월 만기)",val:30000000,note:""},
-  {cat:"확정금리",name:"경찰공제회 (3.8%, 29년 4월 만기)",val:100000000,note:""},
-  {cat:"현금성",name:"CMA",val:120660356,note:""},
-];
-let INVEST=[
-  {id:"td",cat:"ISA",name:"TIGER 미국배당다우존스",ticker:"458730",qty:874,buyKrw:12867,curKrw:14685,isUsd:false},
-  {id:"sd",cat:"ISA",name:"SOL 미국배당다우존스(H)",ticker:"448540",qty:1481,buyKrw:11447,curKrw:12510,isUsd:false},
-  {id:"ts",cat:"ISA",name:"TIGER 미국S&P500",ticker:"360750",qty:272,buyKrw:24757,curKrw:26285,isUsd:false},
-  {id:"tc",cat:"ISA",name:"TIGER 차이나항셍테크",ticker:"371460",qty:578,buyKrw:9225,curKrw:7915,isUsd:false},
-  {id:"ap",cat:"해외주식",name:"애플 (AAPL)",ticker:"AAPL",qty:10,buyKrw:180199,curKrw:416947,isUsd:true},
-  {id:"sc",cat:"해외주식",name:"SCHD",ticker:"SCHD",qty:77,buyKrw:39677,curKrw:45913,isUsd:true},
-  {id:"sp",cat:"해외주식",name:"SPYM",ticker:"SPYM",qty:142,buyKrw:115395,curKrw:125254,isUsd:true},
-  {id:"tq",cat:"해외주식",name:"TQQQ",ticker:"TQQQ",qty:2,buyKrw:48092,curKrw:103791,isUsd:true},
-  {id:"hy",cat:"국내주식",name:"현대차",ticker:"005380",qty:6,buyKrw:261000,curKrw:584000,isUsd:false},
-  {id:"sam",cat:"국내주식",name:"삼성전자",ticker:"005930",qty:31,buyKrw:83052,curKrw:284500,isUsd:false},
-  {id:"go",cat:"원자재",name:"KRX 금(99.99_1Kg)",ticker:"04020000",qty:153,buyKrw:140570,curKrw:217050,isUsd:false},
-];
-const YM={"458730":"458730.KS","448540":"448540.KS","360750":"360750.KS","371460":"371460.KS","005380":"005380.KS","005930":"005930.KS","04020000":"04020000","AAPL":"AAPL","SCHD":"SCHD","SPYM":"SPYM","TQQQ":"TQQQ"};
+const INITIAL_ENCRYPTED_DATA={"v":1,"kdf":"PBKDF2-SHA256","iterations":250000,"salt":"fF9aF2AM23V1NTlfBkIkIw==","iv":"jMe2cvP01qdVNtOn","data":"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"};
+let FIXED=[];
+let INVEST=[];
 const COL={"확정금리":"#4361ee","현금성":"#3a86ff","ISA":"#9b5de5","해외주식":"#f15bb5","국내주식":"#00bbf9","원자재":"#f0b429"};
 const CATS=["ISA","해외주식","국내주식","원자재"];
 let curRate=1449;
@@ -774,8 +759,15 @@ async function fetchYahooPrice(sym){
   }catch(e){return null;}
 }
 
+function marketSymbol(ticker){
+  if(ticker==="04020000"||ticker==="04020100")return ticker;
+  if(/^[A-Z]+$/.test(ticker))return ticker;
+  if(ticker.includes("."))return ticker;
+  return ticker.padStart(6,"0")+".KS";
+}
+
 async function fetchOnePrice(ticker){
-  const sym=YM[ticker]||ticker;
+  const sym=marketSymbol(ticker);
   const isUsd=["AAPL","SCHD","SPYM","TQQQ"].includes(ticker.toUpperCase());
 
   if(ticker==="04020000"||ticker==="04020100"){
@@ -936,15 +928,62 @@ async function doUpdate(){
 ═══════════════════════════════════════ */
 let _modalSave=null;
 let _authResolve=null;
-const EDIT_PASSWORD_SHA256="9ce04d52aafc9d73c0cedd9a3b5841faa7fa2f28ea1b88068c910ef66c610be1";
+let _pageUnlocked=false;
+let _portfolioPassword=null;
 
-async function sha256Text(text){
-  const bytes=new TextEncoder().encode(text);
-  const digest=await crypto.subtle.digest("SHA-256",bytes);
-  return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");
+function b64ToBytes(value){
+  return Uint8Array.from(atob(value),c=>c.charCodeAt(0));
+}
+
+function bytesToB64(bytes){
+  let binary="";
+  bytes.forEach(b=>{binary+=String.fromCharCode(b);});
+  return btoa(binary);
+}
+
+async function derivePortfolioKey(password,salt,iterations){
+  const baseKey=await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2",salt,iterations,hash:"SHA-256"},
+    baseKey,
+    {name:"AES-GCM",length:256},
+    false,
+    ["encrypt","decrypt"]
+  );
+}
+
+async function decryptPortfolioPayload(payload,password){
+  const salt=b64ToBytes(payload.salt);
+  const iv=b64ToBytes(payload.iv);
+  const ciphertext=b64ToBytes(payload.data);
+  const key=await derivePortfolioKey(password,salt,payload.iterations||250000);
+  const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,ciphertext);
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+async function encryptPortfolioPayload(data,password){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const iterations=250000;
+  const key=await derivePortfolioKey(password,salt,iterations);
+  const plain=new TextEncoder().encode(JSON.stringify(data));
+  const ciphertext=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,plain);
+  return {
+    v:1,kdf:"PBKDF2-SHA256",iterations,
+    salt:bytesToB64(salt),
+    iv:bytesToB64(iv),
+    data:bytesToB64(new Uint8Array(ciphertext))
+  };
 }
 
 async function requireEditPassword(){
+  if(!_pageUnlocked&&!(await requirePagePassword()))return false;
   if(!crypto?.subtle){
     alert("이 브라우저에서는 암호 확인을 사용할 수 없습니다.");
     return false;
@@ -953,16 +992,44 @@ async function requireEditPassword(){
   while(true){
     const input=await openAuthModal(failed);
     if(input===null)return false;
-    const hash=await sha256Text(input);
-    if(hash===EDIT_PASSWORD_SHA256)return true;
+    if(input===_portfolioPassword)return true;
     failed=true;
   }
 }
 
-function openAuthModal(showError=false){
+async function requirePagePassword(){
+  if(_pageUnlocked)return true;
+  if(!crypto?.subtle){
+    alert("이 브라우저에서는 암호화된 포트폴리오를 열 수 없습니다.");
+    return false;
+  }
+  let failed=false;
+  while(true){
+    const input=await openAuthModal(failed,"page");
+    if(input===null){
+      failed=false;
+      continue;
+    }
+    try{
+      _portfolioPassword=input;
+      await unlockPortfolio(input);
+      _pageUnlocked=true;
+      document.body.classList.remove("auth-locked");
+      return true;
+    }catch(e){
+      _portfolioPassword=null;
+      console.warn("Portfolio decrypt failed:",e);
+      failed=true;
+    }
+  }
+}
+
+function openAuthModal(showError=false,mode="edit"){
   const overlay=document.getElementById("auth-overlay");
   const input=document.getElementById("auth-input");
   const err=document.getElementById("auth-error");
+  document.getElementById("auth-title").textContent=mode==="page"?"포트폴리오 잠금":"암호 확인";
+  document.getElementById("auth-sub").textContent=mode==="page"?"페이지를 열람하려면 암호를 입력하세요.":"값을 수정하려면 암호를 입력하세요.";
   err.classList.toggle("show",showError);
   input.value="";
   overlay.classList.add("open");
@@ -993,7 +1060,23 @@ function handleAuthKey(e){
 }
 
 function handleAuthOverlayClick(e){
-  if(e.target===document.getElementById("auth-overlay"))cancelAuth();
+  if(e.target===document.getElementById("auth-overlay")&&_pageUnlocked)cancelAuth();
+}
+
+function installClientSideDeterrents(){
+  document.addEventListener("contextmenu",e=>e.preventDefault());
+  document.addEventListener("keydown",e=>{
+    const key=e.key.toLowerCase();
+    const blocked=
+      e.key==="F12"||
+      (e.ctrlKey&&e.shiftKey&&["i","j","c"].includes(key))||
+      (e.ctrlKey&&["u","s"].includes(key));
+    if(blocked){
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  },true);
 }
 
 function openModal(title,sub,fieldsHTML,onSave){
@@ -1067,9 +1150,7 @@ async function openAddInvest(){
       const qty=vn("f-qty"),buy=vn("f-buy"),cur=vn("f-cur");
       const isUsd=v("f-usd")==="1";
       if(!name||!ticker){alert("종목명과 티커를 입력하세요.");return false;}
-      const sym=isUsd?ticker.toUpperCase():(ticker.includes(".")?ticker:ticker+".KS");
       const newId="inv_"+Date.now();
-      YM[ticker]=sym;
       if(!CATS.includes(cat)&&cat!=="기타")CATS.push(cat);
       INVEST.push({id:newId,cat,name,ticker,qty,buyKrw:Math.round(buy),curKrw:Math.round(cur)||Math.round(buy),isUsd});
       render();saveData();return true;
@@ -1141,55 +1222,71 @@ async function deleteFixed(i){
   saveData();
 }
 
-function saveData(savedAt=new Date()){
-  try{
-    localStorage.setItem("portfolio_data",JSON.stringify({
-      INVEST,
-      FIXED,
-      curRate,
-      updatedAt:savedAt.toISOString()
-    }));
-  }catch(e){
-    console.warn("Portfolio save failed:",e);
-  }
-}
-
-function loadData(){
-  try{
-    const raw=localStorage.getItem("portfolio_data");
-    if(!raw)return;
-    const data=JSON.parse(raw);
-    if(Array.isArray(data.INVEST))INVEST=data.INVEST;
-    if(Array.isArray(data.FIXED))FIXED=data.FIXED;
-    let migrated=false;
-    INVEST=INVEST.map(a=>{
-      if(a.id==="go"||a.name?.includes("KRX 금")){
-        const next={...a,name:"KRX 금(99.99_1Kg)",ticker:"04020000"};
-        if(a.ticker==="132030"||a.curKrw<100000){
-          next.curKrw=217050;
-          migrated=true;
-        }
-        return next;
+function applyPortfolioData(data){
+  if(Array.isArray(data.INVEST))INVEST=data.INVEST;
+  if(Array.isArray(data.FIXED))FIXED=data.FIXED;
+  let migrated=false;
+  INVEST=INVEST.map(a=>{
+    if(a.id==="go"||a.name?.includes("KRX 금")){
+      const next={...a,name:"KRX 금(99.99_1Kg)",ticker:"04020000"};
+      if(a.ticker==="132030"||a.curKrw<100000){
+        next.curKrw=217050;
+        migrated=true;
       }
-      return a;
-    });
-    if(Number.isFinite(Number(data.curRate)))curRate=Number(data.curRate);
-    document.getElementById("rate-disp").textContent=comma(curRate)+"원";
-    if(data.updatedAt){
-      const dt=new Date(data.updatedAt);
-      if(!isNaN(dt)){
-        document.getElementById("sub-text").textContent="마지막 저장: "+dt.toLocaleString("ko-KR");
-        document.getElementById("update-time").textContent=dt.toLocaleDateString("ko-KR");
-      }
+      return next;
     }
-    if(migrated)saveData();
-  }catch(e){
-    console.warn("Portfolio load failed:",e);
+    return a;
+  });
+  if(Number.isFinite(Number(data.curRate)))curRate=Number(data.curRate);
+  document.getElementById("rate-disp").textContent=comma(curRate)+"원";
+  if(data.updatedAt){
+    const dt=new Date(data.updatedAt);
+    if(!isNaN(dt)){
+      document.getElementById("sub-text").textContent="마지막 저장: "+dt.toLocaleString("ko-KR");
+      document.getElementById("update-time").textContent=dt.toLocaleDateString("ko-KR");
+    }
   }
+  render();
+  if(migrated)saveData();
 }
 
-loadData();
-render();
+async function unlockPortfolio(password){
+  const encryptedRaw=localStorage.getItem("portfolio_secure_data");
+  if(encryptedRaw){
+    applyPortfolioData(await decryptPortfolioPayload(JSON.parse(encryptedRaw),password));
+    return;
+  }
+
+  const legacyRaw=localStorage.getItem("portfolio_data");
+  if(legacyRaw){
+    await decryptPortfolioPayload(INITIAL_ENCRYPTED_DATA,password);
+    applyPortfolioData(JSON.parse(legacyRaw));
+    localStorage.removeItem("portfolio_data");
+    saveData();
+    return;
+  }
+
+  applyPortfolioData(await decryptPortfolioPayload(INITIAL_ENCRYPTED_DATA,password));
+}
+
+function saveData(savedAt=new Date()){
+  if(!_portfolioPassword)return;
+  const data={
+    INVEST,
+    FIXED,
+    curRate,
+    updatedAt:savedAt.toISOString()
+  };
+  encryptPortfolioPayload(data,_portfolioPassword)
+    .then(payload=>{
+      localStorage.setItem("portfolio_secure_data",JSON.stringify(payload));
+      localStorage.removeItem("portfolio_data");
+    })
+    .catch(e=>console.warn("Portfolio save failed:",e));
+}
+
+installClientSideDeterrents();
+requirePagePassword();
 </script>
 </body>
 </html>
