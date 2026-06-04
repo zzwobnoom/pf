@@ -1,0 +1,296 @@
+:root {
+    --bg-color: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-primary: #3b82f6; /* Blue for PE */
+    --accent-secondary: #ef4444; /* Red for Pomodoro Focus */
+    --accent-tertiary: #10b981; /* Green for Break */
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --ring-color: var(--accent-primary);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    transition: background-color 0.5s ease;
+}
+
+/* Timer End Visual Effect */
+body.timer-ended {
+    animation: pulse-bg 1s infinite alternate;
+}
+
+@keyframes pulse-bg {
+    0% { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0); }
+    100% { box-shadow: inset 0 0 150px 20px var(--ring-color); }
+}
+
+.background-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: move 20s infinite alternate linear;
+}
+
+.blob-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--ring-color);
+    top: -100px;
+    left: -100px;
+    transition: background-color 1s ease;
+}
+
+.blob-2 {
+    width: 300px;
+    height: 300px;
+    background: #8b5cf6;
+    bottom: -50px;
+    right: -50px;
+    animation-delay: -10s;
+}
+
+@keyframes move {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(100px, 50px) scale(1.2); }
+}
+
+.app-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: var(--glass-shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+}
+
+header {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 0.3rem;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.8rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.timer-display {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.progress-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-90deg);
+}
+
+.progress-ring__background {
+    stroke: rgba(255, 255, 255, 0.05);
+}
+
+.progress-ring__circle {
+    stroke: var(--ring-color);
+    stroke-dasharray: 880; /* 2 * pi * 140 ~= 879.6 */
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+}
+
+.time-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+
+#time-left {
+    font-size: 4.5rem;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-variant-numeric: tabular-nums;
+}
+
+#mode-label {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.control-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.control-btn.primary {
+    flex: 2;
+    background: var(--ring-color);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.5s ease, transform 0.2s ease;
+}
+
+.control-btn.primary:hover:not(:disabled) {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+.control-btn.secondary {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.control-btn.secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.control-btn.small {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+    flex: none;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.settings-toggle {
+    width: 100%;
+    text-align: center;
+}
+
+.text-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.text-btn:hover {
+    color: var(--text-primary);
+}
+
+.settings-panel {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
+}
+
+.settings-panel.hidden {
+    display: none;
+}
+
+.setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.setting-group label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.setting-group input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: white;
+    padding: 0.5rem;
+    font-size: 1rem;
+    outline: none;
+}
+
+.setting-group input:focus {
+    border-color: var(--ring-color);
+}

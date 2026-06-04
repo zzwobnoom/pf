@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프리미엄 학습 타이머</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-elements">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="tabs">
+                <button class="tab-btn active" data-mode="pe">기술사</button>
+                <button class="tab-btn" data-mode="pomodoro">뽀모도로</button>
+                <button class="tab-btn" data-mode="stopwatch">스톱워치</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="timer-display">
+                <svg class="progress-ring" width="300" height="300">
+                    <circle class="progress-ring__background" stroke-width="8" fill="transparent" r="140" cx="150" cy="150"/>
+                    <circle class="progress-ring__circle" stroke-width="8" fill="transparent" r="140" cx="150" cy="150"/>
+                </svg>
+                <div class="time-container">
+                    <span id="time-left">100:00</span>
+                    <span id="mode-label">학습 시간</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="start-btn" class="control-btn primary">시작</button>
+                <button id="pause-btn" class="control-btn secondary" disabled>일시정지</button>
+                <button id="reset-btn" class="control-btn secondary">초기화</button>
+            </div>
+
+            <div class="settings-toggle">
+                <button id="settings-btn" class="text-btn">타이머 시간 설정</button>
+            </div>
+
+            <div id="settings-panel" class="settings-panel hidden">
+                <div class="setting-group" id="pe-setting-group">
+                    <label for="pe-time">기술사 타이머 (분):</label>
+                    <input type="number" id="pe-time" value="100" min="1" max="300">
+                </div>
+                <div class="setting-group" id="pomo-setting-group" style="display: none;">
+                    <label for="pomo-focus-time">집중 시간 (분):</label>
+                    <input type="number" id="pomo-focus-time" value="25" min="1" max="60">
+                    <label for="pomo-break-time">휴식 시간 (분):</label>
+                    <input type="number" id="pomo-break-time" value="5" min="1" max="30">
+                </div>
+                <button id="save-settings-btn" class="control-btn primary small">저장</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
